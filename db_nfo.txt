@@ -1,0 +1,685 @@
+host - mysql-252ca5de-mysqlpassword.h.aivencloud.com
+port - 26889
+username - avnadmin
+pass- AVNS_1IFH9IcBTp6gE8enJ0g
+
+#Format - mysql+mysqlconnector://avnadmin:AVNS_1IFH9IcBTp6gE8enJ0g@mysql-252ca5de-mysqlpassword.h.aivencloud.com:/26889
+DB_URI = "mysql+mysqlconnector://@mysql-3102005-cloudstore555-a3ae.h.aivencloud.com:17744/ration"
+
+
+
+
+from flask import Flask, render_template, request, redirect, url_for, session, flash
+import mysql.connector
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+import subprocess
+
+app = Flask(__name__)
+app.secret_key = "your_secret_key"
+
+# # ✅ **Database Connection OFFLINE**
+db = mysql.connector.connect(
+    host="localhost",
+    user="root",
+    password="2405",
+    database="adreepass"
+)
+cursor = db.cursor()
+
+# ✅ **Flask-Login Setup**
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"
+
+class User(UserMixin):
+    def __init__(self, id, username, email):
+        self.id = id
+        self.username = username
+        self.email = email
+
+@login_manager.user_loader
+def load_user(user_id):
+    cursor.execute("SELECT id, username, email FROM user WHERE id = %s", (user_id,))
+    user = cursor.fetchone()
+    if user:
+        return User(user[0], user[1], user[2])
+    return None
+
+# ✅ **Encryption & Decryption Using Java**
+def encrypt_password(password):
+    result = subprocess.run(
+        ["java", "-cp", "passwordencryptor.jar", "PasswordEncryptor", "encrypt", password], 
+        capture_output=True, text=True
+    )
+    return result.stdout.strip().split(":")[-1].strip()
+
+def decrypt_password(encrypted_password):
+    result = subprocess.run(
+        ["java", "-cp", "passwordencryptor.jar", "PasswordEncryptor", "decrypt", encrypted_password], 
+        capture_output=True, text=True
+    )
+    return result.stdout.strip().split(":")[-1].strip()
+
+# ✅ **Routes**
+@app.route("/")
+def home():
+    return render_template("index.html")
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        username = request.form["username"]
+        email = request.form["email"]
+        password = encrypt_password(request.form["password"])
+
+        try:
+            cursor.execute("INSERT INTO user (username, email, password_hash) VALUES (%s, %s, %s)", 
+                           (username, email, password))
+            db.commit()
+            flash("Registration Successful! Please login.", "success")
+            return redirect(url_for("login"))
+        except mysql.connector.Error as e:
+            flash(f"Error: {e}", "danger")
+    
+    return render_template("register.html")
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        email = request.form["email"]
+        password = request.form["password"]
+
+        cursor.execute("SELECT id, username, password_hash FROM user WHERE email = %s", (email,))
+        user = cursor.fetchone()
+
+        if user and decrypt_password(user[2]) == password:
+            user_obj = User(user[0], user[1], email)
+            login_user(user_obj)
+            return redirect(url_for("dashboard"))
+        else:
+            flash("Invalid credentials", "danger")
+
+    return render_template("login.html")
+
+@app.route("/dashboard", methods=["GET", "POST"])
+@login_required
+def dashboard():
+    if request.method == "POST":
+        title = request.form["title"]
+        stored_password = encrypt_password(request.form["stored_password"])
+        note = request.form["note"]
+
+        cursor.execute("INSERT INTO user_data (user_id, title, stored_password, note) VALUES (%s, %s, %s, %s)",
+                       (current_user.id, title, stored_password, note))
+        db.commit()
+        flash("Password & Note Saved!", "success")
+
+    cursor.execute("SELECT id, title, stored_password, note FROM user_data WHERE user_id = %s", (current_user.id,))
+    saved_data = cursor.fetchall()
+    
+    decrypted_data = [(entry[0], entry[1], decrypt_password(entry[2]), entry[3]) for entry in saved_data]
+
+    return render_template("dashboard.html", username=current_user.username, saved_data=decrypted_data)
+
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for("login"))
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+here ths code wth normalsql connector and want to connect wth sqlalgamy and  the connecton  s followng 
+
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text  # Import text for raw SQL queries
+
+app = Flask(__name__)
+
+# Database configuration
+#Format - mysql+mysqlconnector://<username>:<password>@<host>:<port>/<database-name>
+DB_URI = "mysql+mysqlconnector://avnadmin:AVNS_1IFH9IcBTp6gE8enJ0g@mysql-252ca5de-mysqlpassword.h.aivencloud.com:26889/adreepass"
+app.config['SQLALCHEMY_DATABASE_URI'] = DB_URI
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Initialize database
+db = SQLAlchemy(app)
+
+@app.route('/')
+def home():
+    try:
+        db.session.execute(text("SELECT 1"))  # ✅ Use text() for raw SQL
+        return "✅ Database connection established!"
+    except Exception as e:
+        return f"❌ Database connection failed: {str(e)}"
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+now modfed code
+
+foloowng template
+dasbord.htm
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav>
+        <h1>Welcome, {{ username }}</h1>
+        <a href="{{ url_for('logout') }}" class="btn">Logout</a>
+    </nav>
+
+    <div class="container">
+        <h2>Save Password & Notes</h2>
+        <form method="POST">
+            <input type="text" name="title" placeholder="Enter Title" required>
+            <input type="text" name="stored_password" placeholder="Enter Password" required>
+            <textarea name="note" placeholder="Enter Note"></textarea>
+            <button type="submit" class="btn">Save</button>
+        </form>
+
+        <h2>Stored Data</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Password</th>
+                    <th>Note</th>
+                </tr>
+                <tbody>
+                    {% for entry in saved_data %}
+                    <tr>
+                        <td>{{ entry[1] }}</td>
+                        <td class="password-container">
+                            <span class="password" id="password-{{ loop.index }}" data-password="{{ entry[2] }}" data-visible="false">••••••</span>
+                            <button class="eye-btn" id="eye-btn-{{ loop.index }}" onclick="togglePassword({{ loop.index }})">🙈</button>
+                        </td>
+                        <td>{{ entry[3] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>                            
+        </table>
+    </div>
+
+    <footer>
+        <p>Made by Adree (CST/2nd year)</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
+
+
+----
+ndex.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Adree Password Manager</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        /* 🌟 Global Styles */
+        body {
+            font-family: "Poppins", sans-serif;
+            text-align: center;
+            background: linear-gradient(135deg, #4b6cb7, #182848);
+            color: white;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* 🌟 Glassmorphism Container */
+        .container {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            width: 350px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        p {
+            font-size: 16px;
+            margin-bottom: 20px;
+            color: lightgray;
+        }
+
+        /* 🌟 Buttons */
+        .btn {
+            display: inline-block;
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            font-size: 16px;
+            font-weight: bold;
+            text-decoration: none;
+            color: white;
+            background: #00b894;
+            border-radius: 6px;
+            transition: 0.3s ease-in-out;
+        }
+
+        .btn:hover {
+            background: #019874;
+            transform: scale(1.05);
+        }
+
+        /* 🌟 Footer */
+        footer {
+            margin-top: 15px;
+            font-size: 14px;
+            color: lightgray;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Welcome to Adree Password Manager</h1>
+        <p>Securely store your passwords and notes with confidence.</p>
+        <a href="/login" class="btn">Login</a>
+        <a href="/register" class="btn">Register</a>
+        <footer>Made by Adree (CST / 2nd Year)</footer>
+    </div>
+</body>
+</html>
+
+----
+logn.htm
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Login</title>
+    <style>
+        /* 🌟 Global Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #4b6cb7, #182848);
+            color: white;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 🌟 Centered Container */
+        .container {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 320px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            text-align: left;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            outline: none;
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* 🌟 Centered Buttons */
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 10px; /* Spacing between buttons */
+        }
+
+        .btn {
+            width: 48%;
+            padding: 10px;
+            background: #00b894;
+            border: none;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+            text-decoration: none;
+            text-align: center;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background: #019874;
+        }
+
+        p {
+            margin-top: 15px;
+        }
+
+        a {
+            color: #00b894;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* 🌟 Forgot Password Hidden Form */
+        #forgot-password {
+            display: none;
+            margin-top: 20px;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container" id="login-form">
+        <h2>Login</h2>
+        <form method="POST">
+            <label>Email:</label>
+            <input type="email" name="email" placeholder="Enter your email" required>
+            <label>Password:</label>
+            <input type="password" name="password" placeholder="Enter your password" required>
+            
+            <!-- 🌟 Centered Buttons -->
+            <div class="btn-group">
+                <button type="submit" class="btn">Login</button>
+                <a href="{{ url_for('register') }}" class="btn">Register</a>
+            </div>
+        </form>
+        <p><a href="#" onclick="showForgotPassword()">Forgot Password?</a></p>
+    </div>
+
+    <!-- 🌟 Forgot Password Form (Hidden Initially) -->
+    <div class="container" id="forgot-password">
+        <h2>Reset Password</h2>
+        <form method="POST" action="/forgot-password">
+            <label>Email:</label>
+            <input type="email" name="email" placeholder="Enter your email" required>
+            <button type="submit" class="btn" style="width: 100%;">Send OTP</button>
+        </form>
+        <p><a href="#" onclick="showLogin()">Back to Login</a></p>
+    </div>
+
+    <script>
+        function showForgotPassword() {
+            document.getElementById("login-form").style.display = "none";
+            document.getElementById("forgot-password").style.display = "block";
+        }
+
+        function showLogin() {
+            document.getElementById("forgot-password").style.display = "none";
+            document.getElementById("login-form").style.display = "block";
+        }
+    </script>
+</body>
+</html>
+
+
+---
+regstr.htm
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Register</title>
+    <style>
+        /* 🌟 Global Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #4b6cb7, #182848);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        /* 🌟 Centered Container */
+        .container {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 320px;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            text-align: left;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            outline: none;
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #00b894;
+            border: none;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #019874;
+        }
+
+        p {
+            margin-top: 15px;
+        }
+
+        a {
+            color: #00b894;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Register</h2>
+        <form method="POST">
+            <label>Username:</label>
+            <input type="text" name="username" placeholder="Enter your username" required>
+            <label>Email:</label>
+            <input type="email" name="email" placeholder="Enter your email" required>
+            <label>Password:</label>
+            <input type="password" name="password" placeholder="Enter your password" required>
+            <button type="submit">Register</button>
+        </form>
+        <p>Already have an account? <a href="{{ url_for('login') }}">Login</a></p>
+    </div>
+</body>
+</html>
+
+now gve the followng
+modfed code for sqlalgemy connecton
+
+
+
+
+from flask import Flask, render_template, request, redirect, url_for, session, flash
+import mysql.connector
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+import subprocess
+
+app = Flask(__name__)
+app.secret_key = "your_secret_key"
+
+# # ✅ **Database Connection OFFLINE**
+db = mysql.connector.connect(
+    host="localhost",
+    user="root",
+    password="2405",
+    database="adreepass"
+)
+cursor = db.cursor()
+
+# ✅ **Flask-Login Setup**
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"
+
+class User(UserMixin):
+    def __init__(self, id, username, email):
+        self.id = id
+        self.username = username
+        self.email = email
+
+@login_manager.user_loader
+def load_user(user_id):
+    cursor.execute("SELECT id, username, email FROM user WHERE id = %s", (user_id,))
+    user = cursor.fetchone()
+    if user:
+        return User(user[0], user[1], user[2])
+    return None
+
+# ✅ **Encryption & Decryption Using Java**
+def encrypt_password(password):
+    result = subprocess.run(
+        ["java", "-cp", "passwordencryptor.jar", "PasswordEncryptor", "encrypt", password], 
+        capture_output=True, text=True
+    )
+    return result.stdout.strip().split(":")[-1].strip()
+
+def decrypt_password(encrypted_password):
+    result = subprocess.run(
+        ["java", "-cp", "passwordencryptor.jar", "PasswordEncryptor", "decrypt", encrypted_password], 
+        capture_output=True, text=True
+    )
+    return result.stdout.strip().split(":")[-1].strip()
+
+# ✅ **Routes**
+@app.route("/")
+def home():
+    return render_template("index.html")
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        username = request.form["username"]
+        email = request.form["email"]
+        password = encrypt_password(request.form["password"])
+
+        try:
+            cursor.execute("INSERT INTO user (username, email, password_hash) VALUES (%s, %s, %s)", 
+                           (username, email, password))
+            db.commit()
+            flash("Registration Successful! Please login.", "success")
+            return redirect(url_for("login"))
+        except mysql.connector.Error as e:
+            flash(f"Error: {e}", "danger")
+    
+    return render_template("register.html")
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        email = request.form["email"]
+        password = request.form["password"]
+
+        cursor.execute("SELECT id, username, password_hash FROM user WHERE email = %s", (email,))
+        user = cursor.fetchone()
+
+        if user and decrypt_password(user[2]) == password:
+            user_obj = User(user[0], user[1], email)
+            login_user(user_obj)
+            return redirect(url_for("dashboard"))
+        else:
+            flash("Invalid credentials", "danger")
+
+    return render_template("login.html")
+
+@app.route("/dashboard", methods=["GET", "POST"])
+@login_required
+def dashboard():
+    if request.method == "POST":
+        title = request.form["title"]
+        stored_password = encrypt_password(request.form["stored_password"])
+        note = request.form["note"]
+
+        cursor.execute("INSERT INTO user_data (user_id, title, stored_password, note) VALUES (%s, %s, %s, %s)",
+                       (current_user.id, title, stored_password, note))
+        db.commit()
+        flash("Password & Note Saved!", "success")
+
+    cursor.execute("SELECT id, title, stored_password, note FROM user_data WHERE user_id = %s", (current_user.id,))
+    saved_data = cursor.fetchall()
+    
+    decrypted_data = [(entry[0], entry[1], decrypt_password(entry[2]), entry[3]) for entry in saved_data]
+
+    return render_template("dashboard.html", username=current_user.username, saved_data=decrypted_data)
+
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for("login"))
+
+if __name__ == "__main__":
+    app.run(debug=True)
