@@ -1,0 +1,193 @@
+/* 🌟 Global Styles */
+body {
+    font-family: "Poppins", sans-serif;
+    background: linear-gradient(135deg, #4b6cb7, #182848);
+    color: white;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
+/* 🌟 Centered Container */
+.container {
+    width: 50%;
+    max-width: 600px;
+    margin: auto;
+    padding: 25px;
+    background: rgba(0, 0, 0, 0.5); /* Glassmorphism Effect */
+    border-radius: 12px;
+    box-shadow: 0px 4px 15px rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+/* 🌟 Headings */
+h1, h2 {
+    margin-bottom: 15px;
+    color: #f1f1f1;
+}
+
+/* 🌟 Logout Button */
+.logout-btn {
+    color: white;
+    text-decoration: none;
+    background: crimson;
+    padding: 10px 15px;
+    border-radius: 5px;
+    display: inline-block;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.logout-btn:hover {
+    background: rgb(190, 0, 0);
+}
+
+/* 🌟 Form Styling */
+form {
+    display: grid;
+    gap: 12px;
+}
+
+/* 🌟 Input & Textarea Styling */
+input, textarea {
+    width: 100%;
+    padding: 12px;
+    border-radius: 5px;
+    border: none;
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    outline: none;
+    transition: 0.3s;
+    box-sizing: border-box; /* Fix width issues */
+}
+
+input:focus, textarea:focus {
+    background: rgba(255, 255, 255, 0.3);
+    border: 1px solid #00b894;
+}
+
+/* 🌟 Grid Layout for Inputs */
+.form-group {
+    display: grid;
+    grid-template-columns: 1fr; /* Single column default */
+    gap: 10px;
+}
+
+@media (min-width: 600px) {
+    .form-group {
+        grid-template-columns: 1fr 1fr; /* Two columns for larger screens */
+    }
+}
+
+/* 🌟 Textarea */
+textarea {
+    height: 80px;
+    resize: none;
+}
+
+/* 🌟 Submit Button */
+button {
+    background: #00b894;
+    color: white;
+    padding: 12px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+    width: 100%;
+}
+
+button:hover {
+    background: #019874;
+}
+
+/* 🌟 Table Styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+th, td {
+    padding: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    text-align: left;
+    color: white;
+    font-size: 14px;
+}
+
+th {
+    background-color: #00b894;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* 🌟 Password Eye Button */
+.eye-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    margin-left: 8px;
+    color: white;
+    transition: 0.3s;
+}
+
+.eye-btn:hover {
+    color: #00b894;
+}
+
+/* 🌟 Footer */
+footer {
+    margin-top: 20px;
+    color: lightgray;
+    font-size: 14px;
+}
+
+/* 🌟 Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        width: 80%;
+        padding: 15px;
+    }
+}
+/* 🌟 Password Eye Button */
+.eye-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px; /* Smaller Icon */
+    margin-left: 5px;
+    color: white;
+    transition: 0.3s;
+}
+
+.eye-btn:hover {
+    color: #00b894;
+}
+/* 🌟 Password & Eye Button (Compact Design) */
+.password-container {
+    display: flex;
+    align-items: center;
+    gap: 4px; /* Reduced space between password and icon */
+}
+
+/* 🌟 Password Eye Button */
+.eye-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 12px; /* Smaller icon */
+    padding: 2px;
+    color: white;
+    transition: 0.3s;
+}
+
+.eye-btn:hover {
+    color: #00b894;
+}

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Adree Password Manager</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        /* 🌟 Global Styles */
+        body {
+            font-family: "Poppins", sans-serif;
+            text-align: center;
+            background: linear-gradient(135deg, #4b6cb7, #182848);
+            color: white;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* 🌟 Glassmorphism Container */
+        .container {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            width: 350px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        p {
+            font-size: 16px;
+            margin-bottom: 20px;
+            color: lightgray;
+        }
+
+        /* 🌟 Buttons */
+        .btn {
+            display: inline-block;
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            font-size: 16px;
+            font-weight: bold;
+            text-decoration: none;
+            color: white;
+            background: #00b894;
+            border-radius: 6px;
+            transition: 0.3s ease-in-out;
+        }
+
+        .btn:hover {
+            background: #019874;
+            transform: scale(1.05);
+        }
+
+        /* 🌟 Footer */
+        footer {
+            margin-top: 15px;
+            font-size: 14px;
+            color: lightgray;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Welcome to Adree Password Manager</h1>
+        <p>Securely store your passwords and notes with confidence.</p>
+        <a href="/login" class="btn">Login</a>
+        <a href="/register" class="btn">Register</a>
+        <footer>Made by Adree (CST / 2nd Year)</footer>
+    </div>
+</body>
+</html>

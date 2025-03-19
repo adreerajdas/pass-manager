@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Login</title>
+    <style>
+        /* 🌟 Global Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #4b6cb7, #182848);
+            color: white;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 🌟 Centered Container */
+        .container {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 320px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            text-align: left;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            outline: none;
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* 🌟 Centered Buttons */
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 10px; /* Spacing between buttons */
+        }
+
+        .btn {
+            width: 48%;
+            padding: 10px;
+            background: #00b894;
+            border: none;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+            text-decoration: none;
+            text-align: center;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background: #019874;
+        }
+
+        p {
+            margin-top: 15px;
+        }
+
+        a {
+            color: #00b894;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* 🌟 Forgot Password Hidden Form */
+        #forgot-password {
+            display: none;
+            margin-top: 20px;
+        }
+
+    </style>
+</head>
+<body>
+    <!-- 🌟 Login Form -->
+    <div class="container" id="login-form">
+        <h2>Login</h2>
+        <form action="{{ url_for('login') }}" method="POST">
+            <label>Email:</label>
+            <input type="email" name="email" placeholder="Enter your email" required>
+            <label>Password:</label>
+            <input type="password" name="password" placeholder="Enter your password" required>
+            
+            <!-- 🌟 Centered Buttons -->
+            <div class="btn-group">
+                <button type="submit" class="btn">Login</button>
+                <a href="{{ url_for('register') }}" class="btn">Register</a>
+            </div>
+        </form>
+        <p><a href="#" onclick="showForgotPassword()">Forgot Password?</a></p>
+    </div>
+
+    <!-- 🌟 Forgot Password Form (Hidden Initially) -->
+    <div class="container" id="forgot-password">
+        <h2>Reset Password</h2>
+        <form action="{{ url_for('forgot_password') }}" method="POST">
+            <label>Email:</label>
+            <input type="email" name="email" placeholder="Enter your email" required>
+            <button type="submit" class="btn" style="width: 100%;">Send OTP</button>
+        </form>
+        <p><a href="#" onclick="showLogin()">Back to Login</a></p>
+    </div>
+
+    <script>
+        function showForgotPassword() {
+            document.getElementById("login-form").style.display = "none";
+            document.getElementById("forgot-password").style.display = "block";
+        }
+
+        function showLogin() {
+            document.getElementById("forgot-password").style.display = "none";
+            document.getElementById("login-form").style.display = "block";
+        }
+    </script>
+</body>
+</html>

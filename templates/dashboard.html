@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav>
+        <h1>Welcome, {{ username }}</h1>
+        <a href="{{ url_for('logout') }}" class="btn">Logout</a>
+    </nav>
+
+    <div class="container">
+        <h2>Save Password & Notes</h2>
+        <form method="POST">
+            <input type="text" name="title" placeholder="Enter Title" required>
+            <input type="text" name="stored_password" placeholder="Enter Password" required>
+            <textarea name="note" placeholder="Enter Note"></textarea>
+            <button type="submit" class="btn">Save</button>
+        </form>
+
+        <h2>Stored Data</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Password</th>
+                    <th>Note</th>
+                </tr>
+                <tbody>
+                    {% for entry in saved_data %}
+                    <tr>
+                        <td>{{ entry[1] }}</td>
+                        <td class="password-container">
+                            <span class="password" id="password-{{ loop.index }}" data-password="{{ entry[2] }}" data-visible="false">••••••</span>
+                            <button class="eye-btn" id="eye-btn-{{ loop.index }}" onclick="togglePassword({{ loop.index }})">🙈</button>
+                        </td>
+                        <td>{{ entry[3] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>                            
+        </table>
+    </div>
+
+    <footer>
+        <p>Made by Adree (CST/2nd year)</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
